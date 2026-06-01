@@ -105,7 +105,9 @@ export function buildMistralRequest({
 
 export async function callMistral({ apiKey, requestBody, fetchImpl = fetch }) {
   if (!apiKey) {
-    throw new Error("MISTRAL_API_KEY is required for live API calls.");
+    throw new Error(
+      "MISTRAL_API_KEY is required for live API calls. Create .env from .env.example or set the environment variable before running live mode."
+    );
   }
 
   const response = await fetchImpl("https://api.mistral.ai/v1/chat/completions", {

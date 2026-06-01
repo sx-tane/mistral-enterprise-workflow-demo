@@ -99,21 +99,34 @@ The command loads `.env` automatically, so `MISTRAL_API_KEY` and `MISTRAL_MODEL`
 
 ## Run against Mistral
 
-Create an API key in Mistral, then set:
+Create an API key in Mistral, then create a local `.env` file:
 
 ```bash
-export MISTRAL_API_KEY="replace_me"
-export MISTRAL_MODEL="mistral-small-latest"
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```bash
+MISTRAL_API_KEY=replace_me
+MISTRAL_MODEL=mistral-small-latest
+```
+
+Then run:
+
+```bash
 npm run demo:live -- "Which tours need a Chinese-speaking guide?"
 ```
 
 PowerShell:
 
 ```powershell
-$env:MISTRAL_API_KEY = "replace_me"
-$env:MISTRAL_MODEL = "mistral-small-latest"
+Copy-Item .env.example .env
+# Edit .env and paste your key
 npm run demo:live -- "Which tours need a Chinese-speaking guide?"
 ```
+
+You can also set environment variables directly instead of using `.env`.
 
 ## Notes on the Mistral API
 

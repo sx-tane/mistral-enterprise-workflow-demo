@@ -1,6 +1,8 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { extname } from "node:path";
+import { extname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { loadEnvFileIfPresent } from "./env.js";
 import {
   buildMistralRequest,
   buildOfflineAnswer,
@@ -108,7 +110,9 @@ export function createAppServer() {
   });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  await loadEnvFileIfPresent();
+
   const preferredPort = Number(process.env.PORT || 8787);
   const server = createAppServer();
 

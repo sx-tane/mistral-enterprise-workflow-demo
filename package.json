@@ -6,8 +6,8 @@
   "description": "A small public-safe demo for structured enterprise workflow responses with the Mistral API.",
   "scripts": {
     "demo:offline": "node src/index.js --offline",
-    "demo:live": "node --env-file=.env src/index.js --live",
-    "demo:web": "node --env-file=.env src/web-server.js",
+    "demo:live": "node src/index.js --live",
+    "demo:web": "node src/web-server.js",
     "test": "node --test"
   },
   "engines": {
