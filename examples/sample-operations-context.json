@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-06-01T00:00:00.000Z",
+  "notes": "Synthetic, public-safe data inspired by enterprise operations workflows. No client or company data is included.",
+  "tours": [
+    {
+      "tourId": "TOUR-1024",
+      "date": "2026-06-14",
+      "city": "Tokyo",
+      "language": "Chinese",
+      "status": "guide_pending",
+      "travelerCount": 18,
+      "requiresPaymentCheck": false
+    },
+    {
+      "tourId": "TOUR-1031",
+      "date": "2026-06-15",
+      "city": "Kyoto",
+      "language": "English",
+      "status": "confirmed",
+      "travelerCount": 9,
+      "requiresPaymentCheck": true
+    },
+    {
+      "tourId": "TOUR-1040",
+      "date": "2026-06-17",
+      "city": "Osaka",
+      "language": "Japanese",
+      "status": "logistics_pending",
+      "travelerCount": 24,
+      "requiresPaymentCheck": false
+    }
+  ],
+  "guides": [
+    {
+      "guideId": "GUIDE-A",
+      "languages": ["English", "Japanese"],
+      "availableDates": ["2026-06-14", "2026-06-15"]
+    },
+    {
+      "guideId": "GUIDE-B",
+      "languages": ["Chinese", "English"],
+      "availableDates": ["2026-06-14"]
+    },
+    {
+      "guideId": "GUIDE-C",
+      "languages": ["Japanese"],
+      "availableDates": ["2026-06-17"]
+    }
+  ]
+}

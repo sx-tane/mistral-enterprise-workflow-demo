@@ -1,0 +1,23 @@
+{
+  "name": "mistral-enterprise-workflow-demo",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "A small public-safe demo for structured enterprise workflow responses with the Mistral API.",
+  "scripts": {
+    "demo:offline": "node src/index.js --offline",
+    "demo:live": "node src/index.js --live",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mistral",
+    "llm",
+    "structured-outputs",
+    "enterprise-ai",
+    "developer-advocacy"
+  ],
+  "license": "MIT"
+}
