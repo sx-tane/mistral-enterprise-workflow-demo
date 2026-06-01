@@ -1,0 +1,7 @@
+entity,id,date,city,language,status,travelerCount,requiresPaymentCheck,languages,availableDates
+tour,TOUR-1024,2026-06-14,Tokyo,Chinese,guide_pending,18,false,,
+tour,TOUR-1031,2026-06-15,Kyoto,English,confirmed,9,true,,
+tour,TOUR-1040,2026-06-17,Osaka,Japanese,logistics_pending,24,false,,
+guide,GUIDE-A,,,,,,,English|Japanese,2026-06-14|2026-06-15
+guide,GUIDE-B,,,,,,,Chinese|English,2026-06-14
+guide,GUIDE-C,,,,,,,Japanese,2026-06-17

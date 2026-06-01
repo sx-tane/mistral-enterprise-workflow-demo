@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import {
   buildMistralRequest,
   buildOfflineAnswer,
@@ -6,6 +5,7 @@ import {
   extractAssistantContent,
   parseStructuredAnswer
 } from "./workflow.js";
+import { loadOperationsContextFromCsv } from "./data-store.js";
 
 const DEFAULT_QUESTION =
   "Which upcoming tours need action, and is there a Chinese-speaking guide available?";
@@ -14,9 +14,7 @@ async function main() {
   const args = process.argv.slice(2);
   const live = args.includes("--live");
   const question = args.filter((arg) => !arg.startsWith("--")).join(" ") || DEFAULT_QUESTION;
-  const context = JSON.parse(
-    await readFile(new URL("../examples/sample-operations-context.json", import.meta.url), "utf8")
-  );
+  const context = await loadOperationsContextFromCsv();
 
   if (!live) {
     const offlineAnswer = buildOfflineAnswer(question, context);

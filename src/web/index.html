@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ops Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="grain"></div>
+    <main class="app">
+      <header class="hero">
+        <p class="kicker">Enterprise Workflow Demo</p>
+        <h1>Operations Assistant</h1>
+        <p class="lead">
+          Ask a workflow question. The app reads public-safe records from CSV and returns a structured,
+          reviewable recommendation.
+        </p>
+      </header>
+
+      <section class="panel input-panel">
+        <form id="ask-form">
+          <label for="question">Question</label>
+          <textarea
+            id="question"
+            name="question"
+            rows="3"
+            placeholder="Which upcoming tours need action, and is there a Chinese-speaking guide available?"
+            required
+          ></textarea>
+
+          <div class="controls">
+            <label class="mode">
+              Mode
+              <select id="mode" name="mode">
+                <option value="offline">Offline (CSV only)</option>
+                <option value="live">Live (Mistral API + CSV)</option>
+              </select>
+            </label>
+            <button type="submit" id="submit-btn">Run Assistant</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel result-panel">
+        <div class="result-head">
+          <h2>Result</h2>
+          <span id="status-pill" class="pill">idle</span>
+        </div>
+
+        <p id="answer" class="answer">Submit a question to get a structured response.</p>
+
+        <div class="grid">
+          <article class="card">
+            <h3>Confidence</h3>
+            <p id="confidence" class="mono">-</p>
+          </article>
+          <article class="card">
+            <h3>Human Review</h3>
+            <p id="human-review" class="mono">-</p>
+          </article>
+        </div>
+
+        <article class="card list-card">
+          <h3>Matched Records</h3>
+          <ul id="matched-records" class="list"></ul>
+        </article>
+
+        <article class="card list-card">
+          <h3>Recommended Actions</h3>
+          <ul id="actions" class="list"></ul>
+        </article>
+
+        <article class="card list-card">
+          <h3>Missing Information</h3>
+          <ul id="missing" class="list"></ul>
+        </article>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

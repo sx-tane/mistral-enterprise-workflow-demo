@@ -49,10 +49,17 @@ flowchart LR
 ```text
 .
 ├── examples/
+│   ├── sample-operations-context.csv
 │   └── sample-operations-context.json
 ├── src/
+│   ├── data-store.js
 │   ├── index.js
-│   └── workflow.js
+│   ├── web-server.js
+│   ├── workflow.js
+│   └── web/
+│       ├── app.js
+│       ├── index.html
+│       └── styles.css
 ├── test/
 │   └── workflow.test.js
 ├── .env.example
@@ -69,11 +76,26 @@ npm test
 npm run demo:offline
 ```
 
+This now reads sample records from `examples/sample-operations-context.csv`.
+
 You can also pass a custom question:
 
 ```bash
 npm run demo:offline -- "Which tours need a Chinese-speaking guide?"
 ```
+
+## Run the simple UI
+
+```bash
+npm run demo:web
+```
+
+The server will prefer port `8787`; if it is busy, it automatically picks the next available port and prints it.
+
+The command loads `.env` automatically, so `MISTRAL_API_KEY` and `MISTRAL_MODEL` are available in `Live` mode.
+
+- `Offline` mode: uses CSV records and local deterministic logic.
+- `Live` mode: uses CSV records plus Mistral API structured output.
 
 ## Run against Mistral
 
