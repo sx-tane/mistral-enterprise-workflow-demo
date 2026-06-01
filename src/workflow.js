@@ -103,7 +103,7 @@ export function buildMistralRequest({
   };
 }
 
-export async function callMistral({ apiKey, requestBody, fetchImpl = fetch }) {
+export async function callMistral({ apiKey, requestBody, fetchImpl = fetch, signal }) {
   if (!apiKey) {
     throw new Error(
       "MISTRAL_API_KEY is required for live API calls. Create .env from .env.example or set the environment variable before running live mode."
@@ -116,6 +116,7 @@ export async function callMistral({ apiKey, requestBody, fetchImpl = fetch }) {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json"
     },
+    signal,
     body: JSON.stringify(requestBody)
   });
 

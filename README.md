@@ -42,29 +42,34 @@ flowchart LR
 - A prompt boundary that tells the model not to invent records.
 - A live API path using `MISTRAL_API_KEY`.
 - An offline path so the repo can be reviewed without credentials.
-- Tests for the request shape and response parsing.
+- A simple browser UI for offline/live mode.
+- Startup logs that confirm whether live Mistral access is configured and reachable.
+- Tests for the request shape, CSV loading, `.env` loading, and response parsing.
 
 ## Project structure
 
 ```text
 .
-├── examples/
-│   ├── sample-operations-context.csv
-│   └── sample-operations-context.json
-├── src/
-│   ├── data-store.js
-│   ├── index.js
-│   ├── web-server.js
-│   ├── workflow.js
-│   └── web/
-│       ├── app.js
-│       ├── index.html
-│       └── styles.css
-├── test/
-│   └── workflow.test.js
-├── .env.example
-├── package.json
-└── README.md
+|-- examples/
+|   |-- sample-operations-context.csv
+|   `-- sample-operations-context.json
+|-- src/
+|   |-- data-store.js
+|   |-- env.js
+|   |-- index.js
+|   |-- web-server.js
+|   |-- workflow.js
+|   `-- web/
+|       |-- app.js
+|       |-- index.html
+|       `-- styles.css
+|-- test/
+|   |-- data-store.test.js
+|   |-- env.test.js
+|   `-- workflow.test.js
+|-- .env.example
+|-- package.json
+`-- README.md
 ```
 
 ## Run offline
@@ -76,7 +81,7 @@ npm test
 npm run demo:offline
 ```
 
-This now reads sample records from `examples/sample-operations-context.csv`.
+This reads sample records from `examples/sample-operations-context.csv`.
 
 You can also pass a custom question:
 
@@ -90,9 +95,34 @@ npm run demo:offline -- "Which tours need a Chinese-speaking guide?"
 npm run demo:web
 ```
 
-The server will prefer port `8787`; if it is busy, it automatically picks the next available port and prints it.
+The server prefers port `8787`. If that port is busy, it automatically picks the next available port and prints it.
 
 The command loads `.env` automatically, so `MISTRAL_API_KEY` and `MISTRAL_MODEL` are available in `Live` mode.
+
+On startup, the server prints safe diagnostics:
+
+```text
+[startup] Loaded .env file: yes
+[startup] MISTRAL_API_KEY present: yes
+[startup] MISTRAL_MODEL: mistral-small-latest
+[startup] UI server ready at http://localhost:8787
+[startup] Mistral live mode: connected successfully. model=mistral-small-latest; confidence=low
+```
+
+The API key itself is never printed. The startup check makes one small live Mistral request to confirm the key, network, and model work.
+
+To skip the startup check:
+
+```bash
+MISTRAL_STARTUP_CHECK=false npm run demo:web
+```
+
+PowerShell:
+
+```powershell
+$env:MISTRAL_STARTUP_CHECK = "false"
+npm run demo:web
+```
 
 - `Offline` mode: uses CSV records and local deterministic logic.
 - `Live` mode: uses CSV records plus Mistral API structured output.
@@ -165,9 +195,9 @@ The example uses synthetic tour, guide, and logistics-like records. The pattern 
 
 - A real API route using Fastify, Hono, or NestJS.
 - Contract tests for the schema.
-- A small UI showing matched records and review actions.
-- Evaluation cases for "not enough information" and "ambiguous question."
+- More evaluation cases for "not enough information" and "ambiguous question."
 - Logging/observability around latency, confidence, and fallback rate.
+- Authentication and per-user audit logs for a production version.
 
 ## License
 

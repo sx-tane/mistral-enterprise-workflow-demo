@@ -20,6 +20,16 @@ const MIME_TYPES = {
 
 const STATIC_ROOT = new URL("./web/", import.meta.url);
 
+function logStartup(message) {
+  // eslint-disable-next-line no-console
+  console.log(`[startup] ${message}`);
+}
+
+function logStartupError(message) {
+  // eslint-disable-next-line no-console
+  console.error(`[startup] ${message}`);
+}
+
 function sendJson(res, statusCode, payload) {
   res.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
   res.end(JSON.stringify(payload));
@@ -110,11 +120,51 @@ export function createAppServer() {
   });
 }
 
+async function verifyMistralAccess({ model, apiKey }) {
+  if (process.env.MISTRAL_STARTUP_CHECK === "false") {
+    logStartup("Mistral startup check skipped because MISTRAL_STARTUP_CHECK=false.");
+    return;
+  }
+
+  if (!apiKey) {
+    logStartup("Mistral live mode: not configured. MISTRAL_API_KEY is missing.");
+    return;
+  }
+
+  const abortController = new AbortController();
+  const timeout = setTimeout(() => abortController.abort(), 10000);
+
+  try {
+    const requestBody = buildMistralRequest({
+      question: "Run a startup connectivity check and return a concise structured answer.",
+      operationsContext: { tours: [], guides: [] },
+      model
+    });
+
+    const response = await callMistral({
+      apiKey,
+      requestBody,
+      signal: abortController.signal
+    });
+    const content = extractAssistantContent(response);
+    const structuredAnswer = parseStructuredAnswer(content);
+
+    logStartup(
+      `Mistral live mode: connected successfully. model=${model}; confidence=${structuredAnswer.confidence}`
+    );
+  } catch (error) {
+    logStartupError(`Mistral live mode: connection failed. ${error.message}`);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
-  await loadEnvFileIfPresent();
+  const envLoaded = await loadEnvFileIfPresent();
 
   const preferredPort = Number(process.env.PORT || 8787);
   const server = createAppServer();
+  const model = process.env.MISTRAL_MODEL || "mistral-small-latest";
 
   function listenWithFallback(startPort, maxAttempts = 10) {
     return new Promise((resolve, reject) => {
@@ -148,17 +198,18 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
   }
 
   listenWithFallback(preferredPort)
-    .then((port) => {
-      // eslint-disable-next-line no-console
-      console.log(`UI server ready at http://localhost:${port}`);
+    .then(async (port) => {
+      logStartup(`Loaded .env file: ${envLoaded ? "yes" : "no"}`);
+      logStartup(`MISTRAL_API_KEY present: ${process.env.MISTRAL_API_KEY ? "yes" : "no"}`);
+      logStartup(`MISTRAL_MODEL: ${model}`);
+      logStartup(`UI server ready at http://localhost:${port}`);
       if (port !== preferredPort) {
-        // eslint-disable-next-line no-console
-        console.log(`Port ${preferredPort} was busy, using ${port} instead.`);
+        logStartup(`Port ${preferredPort} was busy, using ${port} instead.`);
       }
+      await verifyMistralAccess({ model, apiKey: process.env.MISTRAL_API_KEY });
     })
     .catch((error) => {
-      // eslint-disable-next-line no-console
-      console.error(error.message);
+      logStartupError(error.message);
       process.exitCode = 1;
     });
 }
