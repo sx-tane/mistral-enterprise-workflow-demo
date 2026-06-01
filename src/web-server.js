@@ -35,6 +35,27 @@ function sendJson(res, statusCode, payload) {
   res.end(JSON.stringify(payload));
 }
 
+function createRequestId() {
+  return `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function logRequest(requestId, message) {
+  // eslint-disable-next-line no-console
+  console.log(`[request:${requestId}] ${message}`);
+}
+
+function summarizeMistralResponse(response) {
+  return {
+    id: response.id,
+    model: response.model,
+    created: response.created,
+    object: response.object,
+    usage: response.usage,
+    finishReason: response.choices?.[0]?.finish_reason ?? null,
+    assistantContent: extractAssistantContent(response)
+  };
+}
+
 async function readBody(req) {
   const chunks = [];
 
@@ -46,41 +67,117 @@ async function readBody(req) {
 }
 
 async function handleApiAssist(req, res) {
+  const requestId = createRequestId();
+  const startedAt = Date.now();
+
   try {
     const bodyText = await readBody(req);
     const body = bodyText ? JSON.parse(bodyText) : {};
     const question = String(body.question || "").trim();
     const mode = String(body.mode || "offline").toLowerCase();
+    const requestedAt = new Date(startedAt).toISOString();
 
     if (!question) {
-      sendJson(res, 400, { error: "Question is required." });
+      logRequest(requestId, "Rejected empty question.");
+      sendJson(res, 400, {
+        error: "Question is required.",
+        debug: {
+          requestId,
+          requestedAt,
+          mode,
+          statusCode: 400
+        }
+      });
       return;
     }
 
+    logRequest(requestId, `Received mode=${mode}; question="${question}"`);
     const context = await loadOperationsContextFromCsv();
+    const model = process.env.MISTRAL_MODEL || "mistral-small-latest";
+    const debugBase = {
+      requestId,
+      requestedAt,
+      mode,
+      question,
+      model,
+      contextSummary: {
+        tours: context.tours.length,
+        guides: context.guides.length
+      }
+    };
 
     if (mode === "live") {
       const requestBody = buildMistralRequest({
         question,
         operationsContext: context,
-        model: process.env.MISTRAL_MODEL || "mistral-small-latest"
+        model
       });
 
+      logRequest(requestId, `Calling Mistral model=${model}.`);
       const response = await callMistral({
         apiKey: process.env.MISTRAL_API_KEY,
         requestBody
       });
+      const latencyMs = Date.now() - startedAt;
+      const mistralResponse = summarizeMistralResponse(response);
 
-      const content = extractAssistantContent(response);
-      const structuredAnswer = parseStructuredAnswer(content);
-      sendJson(res, 200, { mode: "live", answer: structuredAnswer });
+      const structuredAnswer = parseStructuredAnswer(mistralResponse.assistantContent);
+      logRequest(
+        requestId,
+        `Mistral response ok; status=200; latencyMs=${latencyMs}; finishReason=${mistralResponse.finishReason}.`
+      );
+      sendJson(res, 200, {
+        mode: "live",
+        answer: structuredAnswer,
+        debug: {
+          ...debugBase,
+          statusCode: 200,
+          latencyMs,
+          mistralRequest: {
+            model: requestBody.model,
+            temperature: requestBody.temperature,
+            max_tokens: requestBody.max_tokens,
+            response_format: requestBody.response_format,
+            messages: requestBody.messages
+          },
+          mistralResponse
+        }
+      });
       return;
     }
 
     const offlineAnswer = buildOfflineAnswer(question, context);
-    sendJson(res, 200, { mode: "offline", answer: offlineAnswer });
+    const latencyMs = Date.now() - startedAt;
+    logRequest(requestId, `Offline response ok; status=200; latencyMs=${latencyMs}.`);
+    sendJson(res, 200, {
+      mode: "offline",
+      answer: offlineAnswer,
+      debug: {
+        ...debugBase,
+        statusCode: 200,
+        latencyMs,
+        offline: true,
+        offlineInput: {
+          question,
+          context
+        }
+      }
+    });
   } catch (error) {
-    sendJson(res, 500, { error: error.message || "Unexpected server error." });
+    const latencyMs = Date.now() - startedAt;
+    logRequest(
+      requestId,
+      `Error; status=500; latencyMs=${latencyMs}; message="${error.message || "Unexpected server error."}"`
+    );
+    sendJson(res, 500, {
+      error: error.message || "Unexpected server error.",
+      debug: {
+        requestId,
+        requestedAt: new Date(startedAt).toISOString(),
+        statusCode: 500,
+        latencyMs
+      }
+    });
   }
 }
 

@@ -44,6 +44,7 @@ flowchart LR
 - An offline path so the repo can be reviewed without credentials.
 - A simple browser UI for offline/live mode.
 - Startup logs that confirm whether live Mistral access is configured and reachable.
+- Per-request server logs and a browser debug panel showing sanitized request/response details.
 - Tests for the request shape, CSV loading, `.env` loading, and response parsing.
 
 ## Project structure
@@ -126,6 +127,16 @@ npm run demo:web
 
 - `Offline` mode: uses CSV records and local deterministic logic.
 - `Live` mode: uses CSV records plus Mistral API structured output.
+
+Each submitted request also prints server logs:
+
+```text
+[request:req_mabc123_xyz789] Received mode=live; question="Which upcoming tours need action?"
+[request:req_mabc123_xyz789] Calling Mistral model=mistral-small-latest.
+[request:req_mabc123_xyz789] Mistral response ok; status=200; latencyMs=1280; finishReason=stop.
+```
+
+The UI also shows a `Request / Response Debug` panel with the request id, sanitized prompt/messages, context counts, HTTP status, latency, model, usage, finish reason, and raw assistant content. It never displays `MISTRAL_API_KEY`.
 
 ## Run against Mistral
 

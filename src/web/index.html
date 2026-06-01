@@ -81,6 +81,17 @@
           <h3>Missing Information</h3>
           <ul id="missing" class="list"></ul>
         </article>
+
+        <article class="card list-card debug-card">
+          <div class="debug-head">
+            <h3>Request / Response Debug</h3>
+            <span id="request-id" class="mono debug-id">-</span>
+          </div>
+          <p class="debug-note">
+            Shows the sanitized payload sent by this app and the response metadata returned. The API key is never exposed.
+          </p>
+          <pre id="debug-output" class="debug-output">Submit a request to inspect the exchange.</pre>
+        </article>
       </section>
     </main>
 

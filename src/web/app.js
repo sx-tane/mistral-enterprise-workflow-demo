@@ -10,6 +10,8 @@ const humanReviewNode = document.getElementById("human-review");
 const matchedNode = document.getElementById("matched-records");
 const actionsNode = document.getElementById("actions");
 const missingNode = document.getElementById("missing");
+const requestIdNode = document.getElementById("request-id");
+const debugOutputNode = document.getElementById("debug-output");
 
 function setStatus(text, className = "") {
   statusPill.textContent = text;
@@ -56,6 +58,11 @@ function renderAnswer(structuredAnswer) {
   renderList(missingNode, structuredAnswer.missingInformation, "No missing information reported.");
 }
 
+function renderDebug(debug) {
+  requestIdNode.textContent = debug?.requestId || "-";
+  debugOutputNode.textContent = JSON.stringify(debug || {}, null, 2);
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -69,6 +76,8 @@ form.addEventListener("submit", async (event) => {
 
   submitButton.disabled = true;
   setStatus("running", "mono");
+  requestIdNode.textContent = "-";
+  debugOutputNode.textContent = "Request in progress...";
 
   try {
     const response = await fetch("/api/assist", {
@@ -80,6 +89,7 @@ form.addEventListener("submit", async (event) => {
     });
 
     const payload = await response.json();
+    renderDebug(payload.debug);
 
     if (!response.ok) {
       throw new Error(payload.error || `Request failed with status ${response.status}`);
@@ -94,6 +104,7 @@ form.addEventListener("submit", async (event) => {
     renderList(matchedNode, [], "No matched records.");
     renderList(actionsNode, [], "No suggested actions.");
     renderList(missingNode, [], "No missing information reported.");
+    debugOutputNode.textContent = error.message;
     setStatus("error", "bad");
   } finally {
     submitButton.disabled = false;
